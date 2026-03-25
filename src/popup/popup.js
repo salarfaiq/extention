@@ -106,20 +106,14 @@ function bindLoginEvents() {
     if (e.key === 'Enter') document.getElementById('loginPassword').focus();
   });
 
-  googleBtn.addEventListener('click', async () => {
+  googleBtn.addEventListener('click', () => {
     setLoginLoading(true);
     errorEl.classList.add('hidden');
-
-    const res = await sendMsg({ action: 'signInGoogle' });
-
-    setLoginLoading(false);
-    if (res?.error) {
-      showLoginError(res.error);
-      return;
-    }
-
-    const authState = await sendMsg({ action: 'getAuthSession' });
-    showAppMain(authState);
+    // Fire and forget — the popup will close when the OAuth window opens.
+    // When the user reopens the popup, initApp() will detect the logged-in state.
+    chrome.runtime.sendMessage({ action: 'signInGoogle' });
+    // Show a brief message since the popup may close
+    googleBtn.textContent = 'Opening Google sign-in...';
   });
 
   forgotLink.addEventListener('click', async (e) => {
