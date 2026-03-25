@@ -58,45 +58,72 @@ const STBAuth = {
 
   // ---- Google Sign-In via Chrome Identity API ----
   async signInWithGoogle() {
-    return new Promise((resolve) => {
-      // Chrome identity API launches OAuth flow
-      chrome.identity.getAuthToken({ interactive: true }, async (token) => {
-        if (chrome.runtime.lastError || !token) {
-          resolve({ error: chrome.runtime.lastError?.message || 'Google sign-in cancelled' });
-          return;
-        }
+    try {
+      // Use launchWebAuthFlow for broader compatibility
+      const redirectUrl = chrome.identity.getRedirectURL();
+      const clientId = '522222757805-6uqreut9turp40hh8o3ki0sfkgon4lhv.apps.googleusercontent.com';
+      const nonce = Math.random().toString(36).slice(2);
 
-        // Exchange Google access token for Firebase credential
-        const res = await fetch(
-          `${AUTH_API}/accounts:signInWithIdp?key=${AUTH_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              postBody: `access_token=${token}&providerId=google.com`,
-              requestUri: chrome.identity.getRedirectURL(),
-              returnSecureToken: true
-            })
+      const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
+        client_id: clientId,
+        response_type: 'token',
+        redirect_uri: redirectUrl,
+        scope: 'openid email profile',
+        nonce: nonce
+      }).toString();
+
+      const responseUrl = await new Promise((resolve, reject) => {
+        chrome.identity.launchWebAuthFlow(
+          { url: authUrl, interactive: true },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else {
+              resolve(response);
+            }
           }
         );
-        const data = await res.json();
-        if (data.error) {
-          resolve({ error: mapAuthError(data.error.message) });
-          return;
-        }
-
-        resolve({
-          ok: true,
-          uid: data.localId,
-          email: data.email,
-          displayName: data.displayName || '',
-          photoUrl: data.photoUrl || '',
-          idToken: data.idToken,
-          refreshToken: data.refreshToken,
-          expiresIn: parseInt(data.expiresIn)
-        });
       });
-    });
+
+      // Extract access_token from the redirect URL
+      const url = new URL(responseUrl.replace('#', '?'));
+      const accessToken = url.searchParams.get('access_token');
+
+      if (!accessToken) {
+        return { error: 'No access token received from Google' };
+      }
+
+      // Exchange Google access token for Firebase credential
+      const res = await fetch(
+        `${AUTH_API}/accounts:signInWithIdp?key=${AUTH_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postBody: `access_token=${accessToken}&providerId=google.com`,
+            requestUri: redirectUrl,
+            returnSecureToken: true
+          })
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        return { error: mapAuthError(data.error.message) };
+      }
+
+      return {
+        ok: true,
+        uid: data.localId,
+        email: data.email,
+        displayName: data.displayName || '',
+        photoUrl: data.photoUrl || '',
+        idToken: data.idToken,
+        refreshToken: data.refreshToken,
+        expiresIn: parseInt(data.expiresIn)
+      };
+    } catch (e) {
+      return { error: e.message || 'Google sign-in failed' };
+    }
   },
 
   // ---- Refresh ID Token ----

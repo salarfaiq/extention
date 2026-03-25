@@ -16,8 +16,14 @@
     "<all_urls>",
     "https://firestore.googleapis.com/*",
     "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://accounts.google.com/*",
     "https://power-mates-default-rtdb.firebaseio.com/*"
   ],
+  "oauth2": {
+    "client_id": "522222757805-6uqreut9turp40hh8o3ki0sfkgon4lhv.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
