@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+  "name": "Screen Time Buddy",
+  "version": "1.0.0",
+  "description": "Take control of your screen time. Set daily limits, earn coins, grow your streak, and build healthier browsing habits.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms",
+    "activeTab",
+    "identity",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "dynamic_rules",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "blocked.html",
+        "assets/characters/*.svg",
+        "assets/icons/*.svg",
+        "assets/icons/*.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+/* ============================================================
+   Screen Time Buddy — Content Script Overlay Styles
+   ============================================================ */
+
+.stb-overlay {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  padding: 6px 14px 6px 6px;
+  cursor: move;
+  user-select: none;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stb-overlay:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.stb-overlay.stb-warning {
+  animation: stb-pulse 1s ease-in-out infinite;
+  border-color: rgba(255, 77, 77, 0.3);
+}
+
+.stb-overlay-ring {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.stb-overlay-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.stb-overlay-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+.stb-overlay-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.stb-overlay-close:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Mini bubble when overlay is dismissed */
+.stb-mini-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.5;
+}
+
+.stb-mini-bubble:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.stb-mini-bubble img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+@keyframes stb-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(255, 77, 77, 0.2); }
+  50% { box-shadow: 0 4px 24px rgba(255, 77, 77, 0.4); }
+}

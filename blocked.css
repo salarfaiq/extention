@@ -1,0 +1,336 @@
+/* ============================================================
+   Screen Time Buddy — Blocked Page Styles
+   Matches the iOS blocking screen design
+   ============================================================ */
+
+:root {
+  --surface: #000000;
+  --card: #1A1A1A;
+  --card-border: rgba(255, 255, 255, 0.06);
+  --accent: #A4FF80;
+  --btn-green-start: #8FD14F;
+  --btn-green-end: #6BAF3D;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8E8E93;
+  --text-tertiary: #636366;
+  --gold: #FFD700;
+  --streak-fire: #FF8800;
+  --error: #FF453A;
+  --ring-red: #FF4D4D;
+  --heart-blue: #1565C0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.blocked-page {
+  max-width: 440px;
+  width: 100%;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ---- Hero Ring ---- */
+.blocked-hero {
+  margin-bottom: 24px;
+}
+
+.blocked-ring-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.blocked-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.blocked-ring .ring-bg {
+  fill: none;
+  stroke: #2C2C2E;
+  stroke-width: 10;
+}
+
+.blocked-ring .ring-progress {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s ease;
+}
+
+.blocked-character {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+}
+
+.blocked-character img {
+  width: 100%;
+  height: 100%;
+  filter: grayscale(30%);
+}
+
+/* ---- Title ---- */
+.blocked-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.blocked-title span {
+  color: var(--error);
+}
+
+/* ---- Message Card ---- */
+.message-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  border-left: 3px solid var(--ring-red);
+}
+
+.message-card p {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* ---- Stakes Strip ---- */
+.stakes-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #141414;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.stake-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stake-icon {
+  font-size: 16px;
+}
+
+.stake-coin {
+  width: 16px;
+  height: 16px;
+}
+
+.stake-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.stake-divider {
+  width: 1px;
+  height: 20px;
+  background: #38383A;
+}
+
+/* ---- Primary CTA ---- */
+.cta-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--btn-green-start), var(--btn-green-end));
+  border: none;
+  border-radius: 16px;
+  color: #000;
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(143, 209, 79, 0.25);
+  transition: opacity 0.2s, transform 0.1s;
+  margin-bottom: 12px;
+}
+
+.cta-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.cta-primary:active {
+  transform: translateY(0);
+}
+
+.cta-coin {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---- Secondary Actions ---- */
+.secondary-actions {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.cta-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cta-secondary:hover {
+  background: #222;
+}
+
+.heart-icon {
+  font-size: 16px;
+}
+
+/* ---- Extend Panel ---- */
+.extend-panel {
+  display: none;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.extend-panel.open {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.extend-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.extend-options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.extend-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--surface);
+  border: 1.5px solid #38383A;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.extend-btn:hover {
+  border-color: var(--accent);
+  background: rgba(164, 255, 128, 0.05);
+}
+
+.extend-time {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.extend-cost {
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.extend-balance {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.inline-coin {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+}
+
+/* ---- Reset Timer ---- */
+.reset-timer {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.reset-timer span {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.cta-primary {
+  animation: pulse 2s ease-in-out infinite;
+}
