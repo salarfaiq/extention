@@ -6,6 +6,7 @@ importScripts(
   'src/core/constants.js',
   'src/core/firebase-config.js',
   'src/services/storage.js',
+  'src/services/auth.js',
   'src/services/sync.js'
 );
 
@@ -341,6 +342,69 @@ async function handleMessage(msg, sender) {
     case 'getAttempts': {
       const count = await STBStorage.getAttempts(msg.domain);
       return { count };
+    }
+
+    // ---- Auth Actions ----
+    case 'signInEmail': {
+      const res = await STBAuth.signInWithEmail(msg.email, msg.password);
+      if (res.error) return res;
+      const session = await STBAuth.saveSession(res);
+      // Pull user profile from Firestore and merge into local data
+      const profile = await STBAuth.getUserProfile(res.uid, res.idToken);
+      if (profile) {
+        const data = await STBStorage.getData();
+        data.user = { uid: profile.uid, email: profile.email, username: profile.username, fullname: profile.fullname };
+        data.coins = profile.coins || data.coins;
+        data.streak = profile.streak || data.streak;
+        await STBStorage.setData(data);
+      }
+      return { ok: true, uid: res.uid, email: res.email };
+    }
+
+    case 'signInGoogle': {
+      const res = await STBAuth.signInWithGoogle();
+      if (res.error) return res;
+      const session = await STBAuth.saveSession(res);
+      const profile = await STBAuth.getUserProfile(res.uid, res.idToken);
+      if (profile) {
+        const data = await STBStorage.getData();
+        data.user = { uid: profile.uid, email: profile.email, username: profile.username, fullname: profile.fullname };
+        data.coins = profile.coins || data.coins;
+        data.streak = profile.streak || data.streak;
+        await STBStorage.setData(data);
+      }
+      return { ok: true, uid: res.uid, email: res.email, displayName: res.displayName };
+    }
+
+    case 'signOut': {
+      await STBAuth.signOut();
+      const data = await STBStorage.getData();
+      data.user = { uid: null, email: null, username: null };
+      await STBStorage.setData(data);
+      return { ok: true };
+    }
+
+    case 'getAuthSession': {
+      const session = await STBAuth.getSession();
+      return session ? { loggedIn: true, uid: session.uid, email: session.email, displayName: session.displayName } : { loggedIn: false };
+    }
+
+    case 'resetPassword': {
+      return await STBAuth.sendPasswordReset(msg.email);
+    }
+
+    case 'syncNow': {
+      const session = await STBAuth.getSession();
+      if (!session) return { error: 'Not logged in' };
+      const profile = await STBAuth.getUserProfile(session.uid, session.idToken);
+      if (profile) {
+        const data = await STBStorage.getData();
+        data.coins = profile.coins;
+        data.streak = profile.streak;
+        await STBStorage.setData(data);
+        return { ok: true, coins: profile.coins, streak: profile.streak };
+      }
+      return { error: 'Could not fetch profile' };
     }
 
     default:

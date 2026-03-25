@@ -10,8 +10,47 @@ let currentData = null;
 let selectedTime = 60;
 let editingDomain = null;
 let selectedTaskDuration = 15;
+let isLoggedIn = false;
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', initApp);
+
+async function initApp() {
+  // Check auth state first
+  const authState = await sendMsg({ action: 'getAuthSession' });
+  isLoggedIn = authState?.loggedIn || false;
+
+  // Also check if user skipped login
+  const skipResult = await chrome.storage.local.get('stb_skip_login');
+  const skippedLogin = skipResult.stb_skip_login === true;
+
+  if (isLoggedIn || skippedLogin) {
+    showAppMain(authState);
+  } else {
+    showLoginScreen();
+  }
+}
+
+function showLoginScreen() {
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('appMain').classList.add('hidden');
+  bindLoginEvents();
+}
+
+function showAppMain(authState) {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appMain').classList.remove('hidden');
+
+  // Show user info in footer
+  if (authState?.loggedIn) {
+    document.getElementById('userEmail').textContent = authState.email || '';
+    document.getElementById('signOutLink').style.display = '';
+  } else {
+    document.getElementById('userEmail').textContent = 'Not signed in';
+    document.getElementById('signOutLink').textContent = 'Sign In';
+  }
+
+  init();
+}
 
 async function init() {
   currentData = await getData();
@@ -19,6 +58,106 @@ async function init() {
   bindEvents();
   autoFillCurrentSite();
   setInterval(refreshData, 5000);
+}
+
+function sendMsg(msg) {
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage(msg, resolve);
+  });
+}
+
+// ---- Login Events ----
+function bindLoginEvents() {
+  const loginBtn = document.getElementById('loginBtn');
+  const googleBtn = document.getElementById('googleBtn');
+  const forgotLink = document.getElementById('forgotLink');
+  const skipBtn = document.getElementById('skipLogin');
+  const errorEl = document.getElementById('loginError');
+
+  loginBtn.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) {
+      showLoginError('Please enter email and password');
+      return;
+    }
+
+    setLoginLoading(true);
+    errorEl.classList.add('hidden');
+
+    const res = await sendMsg({ action: 'signInEmail', email, password });
+
+    setLoginLoading(false);
+    if (res?.error) {
+      showLoginError(res.error);
+      return;
+    }
+
+    const authState = await sendMsg({ action: 'getAuthSession' });
+    showAppMain(authState);
+  });
+
+  // Enter key submits
+  document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') loginBtn.click();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+  });
+
+  googleBtn.addEventListener('click', async () => {
+    setLoginLoading(true);
+    errorEl.classList.add('hidden');
+
+    const res = await sendMsg({ action: 'signInGoogle' });
+
+    setLoginLoading(false);
+    if (res?.error) {
+      showLoginError(res.error);
+      return;
+    }
+
+    const authState = await sendMsg({ action: 'getAuthSession' });
+    showAppMain(authState);
+  });
+
+  forgotLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    if (!email) {
+      showLoginError('Enter your email above, then tap Forgot password');
+      return;
+    }
+    const res = await sendMsg({ action: 'resetPassword', email });
+    if (res?.error) {
+      showLoginError(res.error);
+    } else {
+      errorEl.classList.remove('hidden');
+      errorEl.style.background = 'rgba(164, 255, 128, 0.1)';
+      errorEl.style.borderColor = 'rgba(164, 255, 128, 0.2)';
+      errorEl.style.color = '#A4FF80';
+      errorEl.textContent = 'Password reset email sent!';
+    }
+  });
+
+  skipBtn.addEventListener('click', async () => {
+    await chrome.storage.local.set({ stb_skip_login: true });
+    showAppMain({ loggedIn: false });
+  });
+}
+
+function showLoginError(message) {
+  const el = document.getElementById('loginError');
+  el.textContent = message;
+  el.classList.remove('hidden');
+  el.style.background = '';
+  el.style.borderColor = '';
+  el.style.color = '';
+}
+
+function setLoginLoading(loading) {
+  document.getElementById('loginForm').classList.toggle('login-loading', loading);
 }
 
 // ---- Data ----
@@ -451,6 +590,21 @@ function bindEvents() {
     btn.addEventListener('click', () => {
       chrome.runtime.sendMessage({ action: 'setCharacter', character: btn.dataset.char }, refreshData);
     });
+  });
+
+  // Sign out
+  document.getElementById('signOutLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (isLoggedIn) {
+      await sendMsg({ action: 'signOut' });
+      await chrome.storage.local.remove('stb_skip_login');
+      isLoggedIn = false;
+      showLoginScreen();
+    } else {
+      // "Sign In" link for skipped users
+      await chrome.storage.local.remove('stb_skip_login');
+      showLoginScreen();
+    }
   });
 
   // Task form
