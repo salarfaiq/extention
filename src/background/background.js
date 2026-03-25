@@ -3,11 +3,11 @@
 // ============================================================
 
 importScripts(
-  'src/core/constants.js',
-  'src/core/firebase-config.js',
-  'src/services/storage.js',
-  'src/services/auth.js',
-  'src/services/sync.js'
+  '/src/core/constants.js',
+  '/src/core/firebase-config.js',
+  '/src/services/storage.js',
+  '/src/services/auth.js',
+  '/src/services/sync.js'
 );
 
 const ALARM_TICK = STB_CONSTANTS.ALARM_TICK;
