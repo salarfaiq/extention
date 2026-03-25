@@ -383,6 +383,18 @@ body::-webkit-scrollbar-thumb {
   color: var(--accent);
 }
 
+/* ---- Add Form Time Picker ---- */
+.add-time-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 8px 16px;
+}
+
 /* ---- Form Actions ---- */
 .form-actions {
   display: flex;
@@ -675,12 +687,204 @@ body::-webkit-scrollbar-thumb {
   font-size: 10px;
 }
 
+/* ---- Site Item Wrapper (for inline edit) ---- */
+.site-item-wrapper {
+  border-bottom: 1px solid var(--border);
+}
+
+.site-item-wrapper:last-child {
+  border-bottom: none;
+}
+
+.site-item-wrapper .site-row {
+  border-bottom: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  margin: 0 -4px;
+  padding: 10px 4px;
+  transition: background 0.15s;
+}
+
+.site-item-wrapper .site-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.site-item-wrapper.editing .site-row {
+  background: rgba(164, 255, 128, 0.03);
+}
+
+/* ---- Edit Panel ---- */
+.edit-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s, padding 0.3s;
+  opacity: 0;
+  padding: 0 4px;
+}
+
+.edit-panel.open {
+  max-height: 280px;
+  opacity: 1;
+  padding: 10px 4px 6px;
+}
+
+.edit-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.edit-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-panel-current {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ---- Time Picker (scroll-wheel style) ---- */
+.time-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.time-picker-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 48px;
+}
+
+.picker-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.picker-arrow:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent);
+}
+
+.picker-arrow:active {
+  transform: scale(0.9);
+}
+
+.picker-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  min-width: 36px;
+  text-align: center;
+  cursor: ns-resize;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.picker-value:hover {
+  color: var(--accent);
+}
+
+@keyframes pickerBump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); color: var(--accent); }
+  100% { transform: scale(1); }
+}
+
+.picker-bump {
+  animation: pickerBump 0.2s ease;
+}
+
+.picker-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.picker-separator {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-tertiary);
+  padding-bottom: 18px;
+}
+
+/* ---- Edit Presets ---- */
+.edit-presets {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.edit-preset {
+  flex: 1;
+  padding: 6px 0;
+  background: var(--surface);
+  border: 1.5px solid var(--divider);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.edit-preset:hover {
+  border-color: var(--accent-dim);
+  color: var(--text-primary);
+}
+
+.edit-preset.active {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+  color: var(--accent);
+}
+
+/* ---- Edit Actions ---- */
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 7px 0 !important;
+  font-size: 13px !important;
+}
+
 /* ---- Animations ---- */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.site-row {
+.site-item-wrapper {
   animation: fadeIn 0.2s ease;
 }

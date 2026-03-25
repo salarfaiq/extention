@@ -79,8 +79,32 @@
           <button class="pill" data-time="30">30m</button>
           <button class="pill active" data-time="60">1h</button>
           <button class="pill" data-time="120">2h</button>
+          <button class="pill" data-time="180">3h</button>
         </div>
-        <input type="number" id="customTime" placeholder="Custom (minutes)" min="1" max="1440">
+        <!-- Custom hours:minutes picker -->
+        <div class="add-time-picker" id="addTimePicker">
+          <div class="time-picker-col">
+            <button class="picker-arrow up" id="addHoursUp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="picker-value" id="addHours">1</div>
+            <button class="picker-arrow down" id="addHoursDown">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="picker-label">hours</div>
+          </div>
+          <div class="picker-separator">:</div>
+          <div class="time-picker-col">
+            <button class="picker-arrow up" id="addMinsUp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="picker-value" id="addMins">0</div>
+            <button class="picker-arrow down" id="addMinsDown">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="picker-label">mins</div>
+          </div>
+        </div>
       </div>
       <div class="form-actions">
         <button class="btn-ghost" id="cancelAdd">Cancel</button>

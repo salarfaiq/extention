@@ -8,6 +8,7 @@ const CHARACTER_COINS = { eagle: 4, fox: 3, panda: 2, sloth: 1 };
 
 let currentData = null;
 let selectedTime = 60;
+let editingDomain = null; // track which site is being edited
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -107,33 +108,103 @@ function renderSitesList() {
     const site = sites[domain];
     const remaining = Math.max(0, site.timeLimit - (site.timeUsed || 0));
     const ratio = site.timeLimit > 0 ? (site.timeUsed || 0) / site.timeLimit : 0;
+    const isEditing = editingDomain === domain;
 
     let badgeClass = '';
     if (ratio >= 1) badgeClass = 'danger';
     else if (ratio >= 0.75) badgeClass = 'warning';
 
+    const currentH = Math.floor(site.timeLimit / 60);
+    const currentM = site.timeLimit % 60;
+
     return `
-      <div class="site-row" data-domain="${domain}">
-        <img class="site-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
-        <div class="site-info">
-          <div class="site-domain">${domain}</div>
-          <div class="site-meta">${formatTime(site.timeUsed || 0)} used / ${formatTime(site.timeLimit)} limit</div>
+      <div class="site-item-wrapper ${isEditing ? 'editing' : ''}" data-domain="${domain}">
+        <div class="site-row" data-domain="${domain}">
+          <img class="site-favicon" src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="">
+          <div class="site-info">
+            <div class="site-domain">${domain}</div>
+            <div class="site-meta">${formatTime(site.timeUsed || 0)} used / ${formatTime(site.timeLimit)} limit</div>
+          </div>
+          <div class="site-time-badge ${badgeClass}">${formatTime(remaining)}</div>
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" ${site.enabled ? 'checked' : ''} data-domain="${domain}">
+            <span class="toggle-track"></span>
+          </label>
+          <button class="site-delete" data-domain="${domain}" title="Remove" onclick="event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="#FF453A" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-        <div class="site-time-badge ${badgeClass}">${formatTime(remaining)}</div>
-        <label class="toggle">
-          <input type="checkbox" ${site.enabled ? 'checked' : ''} data-domain="${domain}">
-          <span class="toggle-track"></span>
-        </label>
-        <button class="site-delete" data-domain="${domain}" title="Remove">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="#FF453A" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
+
+        <!-- Inline Edit Panel -->
+        <div class="edit-panel ${isEditing ? 'open' : ''}" data-domain="${domain}">
+          <div class="edit-panel-header">
+            <span class="edit-panel-title">Edit daily limit</span>
+            <span class="edit-panel-current">Currently: ${formatTime(site.timeLimit)}</span>
+          </div>
+
+          <!-- Time Picker -->
+          <div class="time-picker">
+            <div class="time-picker-col">
+              <button class="picker-arrow up" data-field="hours" data-domain="${domain}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
+              <div class="picker-value" data-field="hours" data-domain="${domain}">${currentH}</div>
+              <button class="picker-arrow down" data-field="hours" data-domain="${domain}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
+              <div class="picker-label">hours</div>
+            </div>
+            <div class="picker-separator">:</div>
+            <div class="time-picker-col">
+              <button class="picker-arrow up" data-field="minutes" data-domain="${domain}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
+              <div class="picker-value" data-field="minutes" data-domain="${domain}">${currentM}</div>
+              <button class="picker-arrow down" data-field="minutes" data-domain="${domain}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </button>
+              <div class="picker-label">mins</div>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="edit-presets">
+            <button class="edit-preset ${site.timeLimit === 15 ? 'active' : ''}" data-mins="15" data-domain="${domain}">15m</button>
+            <button class="edit-preset ${site.timeLimit === 30 ? 'active' : ''}" data-mins="30" data-domain="${domain}">30m</button>
+            <button class="edit-preset ${site.timeLimit === 60 ? 'active' : ''}" data-mins="60" data-domain="${domain}">1h</button>
+            <button class="edit-preset ${site.timeLimit === 120 ? 'active' : ''}" data-mins="120" data-domain="${domain}">2h</button>
+            <button class="edit-preset ${site.timeLimit === 180 ? 'active' : ''}" data-mins="180" data-domain="${domain}">3h</button>
+          </div>
+
+          <!-- Save / Cancel -->
+          <div class="edit-actions">
+            <button class="btn-ghost btn-sm edit-cancel" data-domain="${domain}">Cancel</button>
+            <button class="btn-primary btn-sm edit-save" data-domain="${domain}">Save</button>
+          </div>
+        </div>
       </div>
     `;
   }).join('');
 
-  // Bind toggle and delete events
+  // ---- Bind all events ----
+  bindSiteListEvents(container);
+}
+
+function bindSiteListEvents(container) {
+  // Click row to toggle edit
+  container.querySelectorAll('.site-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      // Don't trigger if clicking toggle, delete, or inside edit panel
+      if (e.target.closest('.toggle') || e.target.closest('.site-delete')) return;
+      const domain = row.dataset.domain;
+      editingDomain = editingDomain === domain ? null : domain;
+      renderSitesList();
+    });
+  });
+
+  // Toggle
   container.querySelectorAll('.toggle input').forEach(toggle => {
     toggle.addEventListener('change', (e) => {
       chrome.runtime.sendMessage({
@@ -144,10 +215,143 @@ function renderSitesList() {
     });
   });
 
+  // Delete
   container.querySelectorAll('.site-delete').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const domain = e.currentTarget.dataset.domain;
+      if (editingDomain === domain) editingDomain = null;
       chrome.runtime.sendMessage({ action: 'removeSite', domain }, refreshData);
+    });
+  });
+
+  // Picker arrows
+  container.querySelectorAll('.picker-arrow').forEach(arrow => {
+    arrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const domain = btn.dataset.domain;
+      const field = btn.dataset.field;
+      const isUp = btn.classList.contains('up');
+      const wrapper = btn.closest('.site-item-wrapper');
+
+      const hoursEl = wrapper.querySelector(`.picker-value[data-field="hours"][data-domain="${domain}"]`);
+      const minsEl = wrapper.querySelector(`.picker-value[data-field="minutes"][data-domain="${domain}"]`);
+      let h = parseInt(hoursEl.textContent);
+      let m = parseInt(minsEl.textContent);
+
+      if (field === 'hours') {
+        h = isUp ? Math.min(h + 1, 24) : Math.max(h - 1, 0);
+      } else {
+        m = isUp ? m + 5 : m - 5;
+        if (m >= 60) { m = 0; h = Math.min(h + 1, 24); }
+        if (m < 0) { m = 55; h = Math.max(h - 1, 0); }
+      }
+      // At least 5 minutes
+      if (h === 0 && m < 5) m = 5;
+
+      hoursEl.textContent = h;
+      minsEl.textContent = m;
+
+      // Update active preset
+      const total = h * 60 + m;
+      wrapper.querySelectorAll('.edit-preset').forEach(p => {
+        p.classList.toggle('active', parseInt(p.dataset.mins) === total);
+      });
+
+      // Animate the value
+      const changedEl = field === 'hours' ? hoursEl : minsEl;
+      changedEl.classList.remove('picker-bump');
+      void changedEl.offsetWidth; // reflow
+      changedEl.classList.add('picker-bump');
+    });
+  });
+
+  // Scroll wheel on picker values
+  container.querySelectorAll('.picker-value').forEach(el => {
+    el.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const domain = el.dataset.domain;
+      const field = el.dataset.field;
+      const wrapper = el.closest('.site-item-wrapper');
+      const isUp = e.deltaY < 0;
+
+      const hoursEl = wrapper.querySelector(`.picker-value[data-field="hours"][data-domain="${domain}"]`);
+      const minsEl = wrapper.querySelector(`.picker-value[data-field="minutes"][data-domain="${domain}"]`);
+      let h = parseInt(hoursEl.textContent);
+      let m = parseInt(minsEl.textContent);
+
+      if (field === 'hours') {
+        h = isUp ? Math.min(h + 1, 24) : Math.max(h - 1, 0);
+      } else {
+        m = isUp ? m + 5 : m - 5;
+        if (m >= 60) { m = 0; h = Math.min(h + 1, 24); }
+        if (m < 0) { m = 55; h = Math.max(h - 1, 0); }
+      }
+      if (h === 0 && m < 5) m = 5;
+
+      hoursEl.textContent = h;
+      minsEl.textContent = m;
+
+      const total = h * 60 + m;
+      wrapper.querySelectorAll('.edit-preset').forEach(p => {
+        p.classList.toggle('active', parseInt(p.dataset.mins) === total);
+      });
+
+      const changedEl = field === 'hours' ? hoursEl : minsEl;
+      changedEl.classList.remove('picker-bump');
+      void changedEl.offsetWidth;
+      changedEl.classList.add('picker-bump');
+    }, { passive: false });
+  });
+
+  // Quick presets
+  container.querySelectorAll('.edit-preset').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const domain = btn.dataset.domain;
+      const mins = parseInt(btn.dataset.mins);
+      const wrapper = btn.closest('.site-item-wrapper');
+
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      wrapper.querySelector(`.picker-value[data-field="hours"][data-domain="${domain}"]`).textContent = h;
+      wrapper.querySelector(`.picker-value[data-field="minutes"][data-domain="${domain}"]`).textContent = m;
+
+      wrapper.querySelectorAll('.edit-preset').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Cancel
+  container.querySelectorAll('.edit-cancel').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editingDomain = null;
+      renderSitesList();
+    });
+  });
+
+  // Save
+  container.querySelectorAll('.edit-save').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const domain = btn.dataset.domain;
+      const wrapper = btn.closest('.site-item-wrapper');
+      const h = parseInt(wrapper.querySelector(`.picker-value[data-field="hours"][data-domain="${domain}"]`).textContent);
+      const m = parseInt(wrapper.querySelector(`.picker-value[data-field="minutes"][data-domain="${domain}"]`).textContent);
+      const newLimit = h * 60 + m;
+
+      if (newLimit < 1) return;
+
+      chrome.runtime.sendMessage({
+        action: 'updateTimeLimit',
+        domain,
+        timeLimit: newLimit
+      }, () => {
+        editingDomain = null;
+        refreshData();
+      });
     });
   });
 }
@@ -207,31 +411,43 @@ function bindEvents() {
     resetForm();
   });
 
-  // Time pills
+  // Time pills — sync with picker
   document.querySelectorAll('.pill').forEach(pill => {
     pill.addEventListener('click', () => {
       document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       selectedTime = parseInt(pill.dataset.time);
-      document.getElementById('customTime').value = '';
+      // Sync picker display
+      document.getElementById('addHours').textContent = Math.floor(selectedTime / 60);
+      document.getElementById('addMins').textContent = selectedTime % 60;
     });
   });
 
-  document.getElementById('customTime').addEventListener('input', (e) => {
-    if (e.target.value) {
-      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-      selectedTime = parseInt(e.target.value) || 60;
-    }
+  // Add form picker arrows
+  bindAddPickerArrow('addHoursUp', 'hours', true);
+  bindAddPickerArrow('addHoursDown', 'hours', false);
+  bindAddPickerArrow('addMinsUp', 'minutes', true);
+  bindAddPickerArrow('addMinsDown', 'minutes', false);
+
+  // Scroll wheel on add picker values
+  ['addHours', 'addMins'].forEach(id => {
+    const el = document.getElementById(id);
+    const field = id === 'addHours' ? 'hours' : 'minutes';
+    el.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      adjustAddPicker(field, e.deltaY < 0);
+    }, { passive: false });
   });
 
   // Add site
   document.getElementById('confirmAdd').addEventListener('click', () => {
     const domain = document.getElementById('siteInput').value.trim().toLowerCase();
-    const customTime = document.getElementById('customTime').value;
-    const timeLimit = customTime ? parseInt(customTime) : selectedTime;
+    const h = parseInt(document.getElementById('addHours').textContent);
+    const m = parseInt(document.getElementById('addMins').textContent);
+    const timeLimit = h * 60 + m;
 
     if (!domain) return;
-    if (!timeLimit || timeLimit <= 0) return;
+    if (timeLimit < 1) return;
 
     chrome.runtime.sendMessage({
       action: 'addSite',
@@ -239,7 +455,6 @@ function bindEvents() {
       timeLimit
     }, (response) => {
       if (response?.error) {
-        // Briefly highlight the existing site
         const existing = document.querySelector(`.site-row[data-domain="${domain}"]`);
         if (existing) {
           existing.style.background = 'rgba(255, 69, 58, 0.1)';
@@ -264,6 +479,44 @@ function bindEvents() {
   });
 }
 
+function bindAddPickerArrow(btnId, field, isUp) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    adjustAddPicker(field, isUp);
+  });
+}
+
+function adjustAddPicker(field, isUp) {
+  const hoursEl = document.getElementById('addHours');
+  const minsEl = document.getElementById('addMins');
+  let h = parseInt(hoursEl.textContent);
+  let m = parseInt(minsEl.textContent);
+
+  if (field === 'hours') {
+    h = isUp ? Math.min(h + 1, 24) : Math.max(h - 1, 0);
+  } else {
+    m = isUp ? m + 5 : m - 5;
+    if (m >= 60) { m = 0; h = Math.min(h + 1, 24); }
+    if (m < 0) { m = 55; h = Math.max(h - 1, 0); }
+  }
+  if (h === 0 && m < 5) m = 5;
+
+  hoursEl.textContent = h;
+  minsEl.textContent = m;
+
+  selectedTime = h * 60 + m;
+
+  // Sync active pill
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.time) === selectedTime);
+  });
+
+  // Animate
+  const el = field === 'hours' ? hoursEl : minsEl;
+  el.classList.remove('picker-bump');
+  void el.offsetWidth;
+  el.classList.add('picker-bump');
+}
+
 function autoFillCurrentSite() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]?.url) {
@@ -279,8 +532,9 @@ function autoFillCurrentSite() {
 
 function resetForm() {
   document.getElementById('siteInput').value = '';
-  document.getElementById('customTime').value = '';
   selectedTime = 60;
+  document.getElementById('addHours').textContent = 1;
+  document.getElementById('addMins').textContent = 0;
   document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
   document.querySelector('.pill[data-time="60"]').classList.add('active');
   autoFillCurrentSite();
