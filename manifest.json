@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Screen Time Buddy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Take control of your screen time. Set daily limits, earn coins, grow your streak, and build healthier browsing habits.",
   "permissions": [
     "storage",
@@ -13,10 +13,13 @@
     "declarativeNetRequestFeedback"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "<all_urls>",
+    "https://firestore.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "https://power-mates-default-rtdb.firebaseio.com/*"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png",
@@ -29,13 +32,13 @@
     "128": "assets/icons/icon128.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"]
+      "js": ["src/content/content.js"],
+      "css": ["src/content/content.css"]
     }
   ],
   "declarative_net_request": {
@@ -50,7 +53,12 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "blocked.html",
+        "src/pages/blocked.html",
+        "src/pages/blocked.css",
+        "src/pages/blocked.js",
+        "src/pages/congrats.html",
+        "src/pages/congrats.css",
+        "src/pages/congrats.js",
         "assets/characters/*.svg",
         "assets/icons/*.svg",
         "assets/icons/*.png"

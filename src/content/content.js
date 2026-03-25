@@ -1,23 +1,23 @@
 // ============================================================
 // Screen Time Buddy — Content Script (Floating Countdown Overlay)
+// Updates every 5 seconds for responsive display
 // ============================================================
 
 let overlay = null;
 let minimized = false;
+let currentCharacter = 'fox';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'countdown') {
+    if (msg.character) currentCharacter = msg.character;
     updateOverlay(msg);
     sendResponse({ ok: true });
   }
 });
 
-// Request initial data when page loads
 function requestInitialData() {
   chrome.runtime.sendMessage({ action: 'getTimeRemaining' }, (res) => {
-    if (res?.timeRemaining != null && res.timeRemaining < Infinity) {
-      // We'll get regular updates from the background via countdown messages
-    }
+    // Background will send regular countdown messages
   });
 }
 
@@ -31,11 +31,8 @@ function updateOverlay(data) {
   }
 
   const { timeRemaining, timeLimit, character } = data;
-  if (timeRemaining <= 0) return; // will be blocked by background
-
-  // Don't show overlay if user dismissed it
+  if (timeRemaining <= 0) return;
   if (minimized) return;
-
   if (!overlay) createOverlay();
 
   const ratio = timeLimit > 0 ? timeRemaining / timeLimit : 1;
@@ -45,7 +42,6 @@ function updateOverlay(data) {
     ? `${Math.floor(minutes / 60)}h ${minutes % 60}m`
     : `${minutes}m ${String(seconds).padStart(2, '0')}s`;
 
-  // Update text
   const textEl = overlay.querySelector('.stb-overlay-text');
   if (textEl) textEl.textContent = timeStr;
 
@@ -62,7 +58,14 @@ function updateOverlay(data) {
     ring.setAttribute('stroke', color);
   }
 
-  // Pulse warning when low
+  // Update character icon
+  const iconEl = overlay.querySelector('.stb-overlay-icon');
+  if (iconEl && character) {
+    const charUrl = chrome.runtime.getURL(`assets/characters/${character}.svg`);
+    if (iconEl.src !== charUrl) iconEl.src = charUrl;
+  }
+
+  // Warning pulse
   if (ratio < 0.1) {
     overlay.classList.add('stb-warning');
   } else {
@@ -73,6 +76,9 @@ function updateOverlay(data) {
 function createOverlay() {
   overlay = document.createElement('div');
   overlay.className = 'stb-overlay';
+
+  const charUrl = chrome.runtime.getURL(`assets/characters/${currentCharacter}.svg`);
+
   overlay.innerHTML = `
     <div class="stb-overlay-ring">
       <svg viewBox="0 0 40 40" width="36" height="36">
@@ -82,7 +88,7 @@ function createOverlay() {
           stroke-dasharray="100 100"
           transform="rotate(-90 20 20)" />
       </svg>
-      <img class="stb-overlay-icon" src="${chrome.runtime.getURL('assets/icons/icon48.png')}" alt="">
+      <img class="stb-overlay-icon" src="${charUrl}" alt="">
     </div>
     <span class="stb-overlay-text">--:--</span>
     <button class="stb-overlay-close" title="Hide timer">&times;</button>
@@ -90,7 +96,6 @@ function createOverlay() {
 
   document.body.appendChild(overlay);
 
-  // Close button
   overlay.querySelector('.stb-overlay-close').addEventListener('click', (e) => {
     e.stopPropagation();
     minimized = true;
@@ -98,7 +103,6 @@ function createOverlay() {
     showMiniBubble();
   });
 
-  // Dragging
   makeDraggable(overlay);
 }
 
@@ -112,7 +116,8 @@ function removeOverlay() {
 function showMiniBubble() {
   const bubble = document.createElement('div');
   bubble.className = 'stb-mini-bubble';
-  bubble.innerHTML = `<img src="${chrome.runtime.getURL('assets/icons/icon48.png')}" alt="STB">`;
+  const charUrl = chrome.runtime.getURL(`assets/characters/${currentCharacter}.svg`);
+  bubble.innerHTML = `<img src="${charUrl}" alt="STB">`;
   bubble.title = 'Show Screen Time Buddy timer';
   document.body.appendChild(bubble);
 

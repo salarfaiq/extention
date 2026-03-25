@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Screen Time Buddy — Blocked</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <div class="blocked-page" id="mainView">
+    <!-- Character + Ring -->
+    <div class="blocked-hero">
+      <div class="blocked-ring-container">
+        <svg class="blocked-ring" viewBox="0 0 160 160">
+          <circle class="ring-bg" cx="80" cy="80" r="70" />
+          <circle class="ring-progress" id="blockedRing" cx="80" cy="80" r="70"
+            stroke="#FF4D4D" stroke-dasharray="440 440" />
+        </svg>
+        <div class="blocked-character" id="blockedCharacter"></div>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <h1 class="blocked-title">
+      <span id="blockedDomain">This site</span> is blocked
+    </h1>
+
+    <!-- Dynamic Message -->
+    <div class="message-card" id="messageCard">
+      <div class="message-border" id="messageBorder"></div>
+      <p id="blockedMessage">You've reached your daily limit.</p>
+    </div>
+
+    <!-- Stakes Strip -->
+    <div class="stakes-strip">
+      <div class="stake-item">
+        <span class="stake-icon">&#x1F525;</span>
+        <span class="stake-label" id="stakeStreak">0 day streak at risk</span>
+      </div>
+      <div class="stake-divider"></div>
+      <div class="stake-item">
+        <img src="../../assets/icons/coin.svg" alt="" class="stake-coin">
+        <span class="stake-label" id="stakeCoins">Close now to earn coins</span>
+      </div>
+    </div>
+
+    <!-- Primary CTA -->
+    <button class="cta-primary" id="closeAppBtn">
+      <img src="../../assets/icons/coin.svg" alt="" class="cta-coin">
+      <span id="ctaText">Close & Earn 1 Coin</span>
+    </button>
+
+    <!-- Secondary Actions -->
+    <div class="secondary-actions">
+      <button class="cta-secondary" id="struggleBtn">
+        <span class="heart-icon">&#x2764;&#xFE0F;</span>
+        I'm Struggling
+      </button>
+    </div>
+
+    <!-- Reset Timer -->
+    <div class="reset-timer">
+      Resets in <span id="resetTimer">--:--:--</span>
+    </div>
+  </div>
+
+  <!-- Struggling Panel (replaces main view) -->
+  <div class="struggling-panel hidden" id="strugglingPanel">
+    <button class="back-btn" id="backToMain">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Back
+    </button>
+    <h2 class="struggling-title">What would help right now?</h2>
+    <div class="struggling-options">
+      <button class="struggle-option" data-action="breathe">
+        <span class="struggle-emoji">&#x1F32C;&#xFE0F;</span>
+        <span class="struggle-label">Breathe First</span>
+        <span class="struggle-desc">4 calming breaths</span>
+      </button>
+      <button class="struggle-option" data-action="games">
+        <span class="struggle-emoji">&#x1F3AE;</span>
+        <span class="struggle-label">Play a Mind Game</span>
+        <span class="struggle-desc">Redirect your focus</span>
+      </button>
+      <button class="struggle-option" data-action="tasks">
+        <span class="struggle-emoji">&#x1F4CB;</span>
+        <span class="struggle-label">Check Your Tasks</span>
+        <span class="struggle-desc">Today's plan awaits</span>
+      </button>
+      <button class="struggle-option" data-action="walk">
+        <span class="struggle-emoji">&#x1F6B6;</span>
+        <span class="struggle-label">Take a Walk</span>
+        <span class="struggle-desc">Move your body</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Breathing Exercise -->
+  <div class="breathing-panel hidden" id="breathingPanel">
+    <button class="back-btn" id="backFromBreathing">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Back
+    </button>
+    <div class="breathing-circle" id="breathingCircle">
+      <div class="breathing-inner" id="breathingInner">
+        <span class="breathing-text" id="breathingText">Ready</span>
+        <span class="breathing-count" id="breathingCount"></span>
+      </div>
+    </div>
+    <button class="cta-primary breathing-start" id="startBreathing">Begin Breathing</button>
+  </div>
+
+  <!-- Feeling Check (after breathing) -->
+  <div class="feeling-panel hidden" id="feelingPanel">
+    <h2 class="feeling-title">How are you feeling?</h2>
+    <div class="feeling-grid" id="feelingGrid"></div>
+  </div>
+
+  <!-- Feeling Redirect Message -->
+  <div class="feeling-redirect hidden" id="feelingRedirect">
+    <div class="redirect-emoji" id="redirectEmoji"></div>
+    <p class="redirect-message" id="redirectMessage"></p>
+    <button class="cta-primary" id="redirectBack">Got it, thanks</button>
+  </div>
+
+  <!-- Games Hub -->
+  <div class="games-hub hidden" id="gamesHub">
+    <button class="back-btn" id="backFromGames">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Back
+    </button>
+    <h2 class="games-title">Mind Games</h2>
+    <p class="games-subtitle">Earn coins while you refocus</p>
+    <div class="games-grid">
+      <button class="game-card" data-game="mindMatch">
+        <span class="game-icon">&#x1F9E9;</span>
+        <span class="game-name">Mind Match</span>
+        <span class="game-reward">+2 coins</span>
+      </button>
+      <button class="game-card" data-game="eagleEye">
+        <span class="game-icon">&#x1F985;</span>
+        <span class="game-name">Eagle Eye</span>
+        <span class="game-reward">+1 coin/round</span>
+      </button>
+      <button class="game-card" data-game="wordForge">
+        <span class="game-icon">&#x1F4DD;</span>
+        <span class="game-name">Word Forge</span>
+        <span class="game-reward">+2 coins/word</span>
+      </button>
+      <button class="game-card" data-game="reflexRush">
+        <span class="game-icon">&#x26A1;</span>
+        <span class="game-name">Reflex Rush</span>
+        <span class="game-reward">+1 coin/5 hits</span>
+      </button>
+      <button class="game-card" data-game="impulseMath">
+        <span class="game-icon">&#x1F9EE;</span>
+        <span class="game-name">Impulse Math</span>
+        <span class="game-reward">+1 coin/5 correct</span>
+      </button>
+      <button class="game-card" data-game="zenBreath">
+        <span class="game-icon">&#x1F9D8;</span>
+        <span class="game-name">Zen Breath</span>
+        <span class="game-reward">+2 coins</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Container (games render here) -->
+  <div class="game-container hidden" id="gameContainer">
+    <div class="game-header">
+      <button class="back-btn" id="backFromGame">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        Back
+      </button>
+      <span class="game-timer" id="gameTimer">60s</span>
+      <span class="game-score" id="gameScore"></span>
+    </div>
+    <div class="game-area" id="gameArea"></div>
+    <div class="game-result hidden" id="gameResult">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-text" id="resultText"></div>
+      <div class="result-coins" id="resultCoins"></div>
+      <button class="cta-primary" id="resultBack">Back to Games</button>
+    </div>
+  </div>
+
+  <!-- Tasks Panel -->
+  <div class="tasks-panel hidden" id="tasksPanel">
+    <button class="back-btn" id="backFromTasks">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Back
+    </button>
+    <h2 class="tasks-title">Today's Plan</h2>
+    <div class="tasks-list" id="blockedTasksList"></div>
+    <button class="cta-primary" id="tasksGoBack">Back to Choices</button>
+  </div>
+
+  <!-- Walk Panel -->
+  <div class="walk-panel hidden" id="walkPanel">
+    <button class="back-btn" id="backFromWalk">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      Back
+    </button>
+    <div class="walk-content">
+      <div class="walk-emoji">&#x1F6B6;</div>
+      <h2>Take a Walk</h2>
+      <p>Even 5 minutes of movement can reset your brain chemistry. Step outside, feel the air, and come back refreshed.</p>
+      <p class="walk-tip">Tip: Leave your phone behind. The urge will pass.</p>
+    </div>
+  </div>
+
+  <script src="blocked.js"></script>
+</body>
+</html>

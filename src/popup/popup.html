@@ -10,12 +10,12 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <div class="logo-mark">STB</div>
+      <img src="../../assets/icons/icon48.png" alt="Screen Time Buddy" class="logo-icon">
       <span class="header-title">Screen Time Buddy</span>
     </div>
     <div class="header-right">
       <div class="coin-badge">
-        <img src="assets/icons/coin.svg" alt="coins" class="coin-icon">
+        <img src="../../assets/icons/coin.svg" alt="coins" class="coin-icon">
         <span id="coinCount">0</span>
       </div>
       <div class="streak-badge" id="streakBadge">
@@ -41,16 +41,16 @@
     </div>
     <div class="character-selector" id="characterSelector">
       <button class="char-btn" data-char="eagle" title="Eagle: 1.5h goal, 4 coins/day">
-        <img src="assets/characters/eagle.svg" alt="Eagle">
+        <img src="../../assets/characters/eagle.svg" alt="Eagle">
       </button>
       <button class="char-btn active" data-char="fox" title="Fox: 3h goal, 3 coins/day">
-        <img src="assets/characters/fox.svg" alt="Fox">
+        <img src="../../assets/characters/fox.svg" alt="Fox">
       </button>
       <button class="char-btn" data-char="panda" title="Panda: 4h goal, 2 coins/day">
-        <img src="assets/characters/panda.svg" alt="Panda">
+        <img src="../../assets/characters/panda.svg" alt="Panda">
       </button>
       <button class="char-btn" data-char="sloth" title="Sloth: 5h goal, 1 coin/day">
-        <img src="assets/characters/sloth.svg" alt="Sloth">
+        <img src="../../assets/characters/sloth.svg" alt="Sloth">
       </button>
     </div>
   </div>
@@ -81,7 +81,6 @@
           <button class="pill" data-time="120">2h</button>
           <button class="pill" data-time="180">3h</button>
         </div>
-        <!-- Custom hours:minutes picker -->
         <div class="add-time-picker" id="addTimePicker">
           <div class="time-picker-col">
             <button class="picker-arrow up" id="addHoursUp">
@@ -130,6 +129,39 @@
       <span class="section-title">Time Remaining</span>
     </div>
     <div class="time-grid" id="timeGrid"></div>
+  </div>
+
+  <!-- Today's Plan -->
+  <div class="section" id="planSection">
+    <div class="section-header">
+      <span class="section-title">Today's Plan</span>
+      <span class="task-progress" id="taskProgress">0/0</span>
+    </div>
+    <div class="task-list" id="taskList">
+      <div class="empty-state task-empty">No tasks yet. Add one to stay focused.</div>
+    </div>
+    <button class="add-task-btn" id="showTaskForm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M12 5V19M5 12H19" stroke="#A4FF80" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      Add Task
+    </button>
+    <div class="task-form" id="taskForm">
+      <input type="text" id="taskInput" placeholder="What do you need to do?" autocomplete="off">
+      <div class="task-duration-pills">
+        <button class="duration-pill active" data-dur="15">15m</button>
+        <button class="duration-pill" data-dur="30">30m</button>
+        <button class="duration-pill" data-dur="45">45m</button>
+        <button class="duration-pill" data-dur="60">60m</button>
+      </div>
+      <div class="task-form-actions">
+        <button class="btn-ghost btn-sm" id="cancelTask">Cancel</button>
+        <button class="btn-primary btn-sm" id="confirmTask">Add</button>
+      </div>
+    </div>
+    <div class="task-progress-bar" id="taskProgressBar">
+      <div class="task-progress-fill" id="taskProgressFill"></div>
+    </div>
   </div>
 
   <!-- Footer -->
