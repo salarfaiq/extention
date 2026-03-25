@@ -123,17 +123,27 @@ body::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; 
   stroke-linecap: round;
   transition: stroke-dasharray 0.8s ease, stroke 0.5s ease;
 }
+/* Ring math: viewBox=120, r=52, stroke=8
+   Inner radius = r - stroke/2 = 48
+   Inner diameter = 96/120 of viewBox = 80% of container
+   Container = 130px → character = 104px */
 .ring-character {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70px;
-  height: 70px;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ring-character img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 .ring-stats {
   text-align: center;
@@ -440,13 +450,17 @@ body::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; 
 .mini-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .mini-ring .ring-bg { stroke-width: 6; }
 .mini-ring .ring-progress { stroke-width: 6; }
+/* Mini ring math: viewBox=50, r=20, stroke=6
+   Inner radius = r - stroke/2 = 17
+   Inner diameter = 34/50 = 68% of container
+   Container = 50px → icon area = 34px */
 .mini-ring-icon {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 22px;
-  height: 22px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #fff;
   display: flex;
@@ -454,7 +468,7 @@ body::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; 
   justify-content: center;
   overflow: hidden;
 }
-.mini-ring-icon img { width: 14px; height: 14px; }
+.mini-ring-icon img { width: 22px; height: 22px; }
 .time-circle-label {
   font-size: 10px;
   color: var(--text-secondary);

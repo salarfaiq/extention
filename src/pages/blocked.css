@@ -75,13 +75,19 @@ body {
   stroke-linecap: round;
   transition: stroke-dasharray 1s ease;
 }
+/* Ring math: viewBox=160, r=70, stroke=10
+   Inner radius = r - stroke/2 = 65
+   Inner diameter = 130/160 of viewBox = 81.25% of container
+   Container = 160px → character = 130px */
 .blocked-character {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90px;
-  height: 90px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,6 +95,7 @@ body {
 .blocked-character img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 /* ---- Title ---- */

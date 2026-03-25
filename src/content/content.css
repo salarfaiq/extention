@@ -40,14 +40,19 @@
   flex-shrink: 0;
 }
 
+/* Ring math: viewBox=40, r=16, stroke=3
+   Inner radius = r - stroke/2 = 14.5
+   Inner diameter = 29/40 of viewBox = 72.5%
+   Container = 36px → icon = 26px */
 .stb-overlay-icon {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
+  object-fit: contain;
 }
 
 .stb-overlay-text {
