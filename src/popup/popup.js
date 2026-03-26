@@ -629,6 +629,9 @@ function bindEvents() {
       document.querySelectorAll('.duration-pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       selectedTaskDuration = parseInt(pill.dataset.dur);
+      // Sync picker display
+      document.getElementById('taskHours').textContent = Math.floor(selectedTaskDuration / 60);
+      document.getElementById('taskMins').textContent = selectedTaskDuration % 60;
     });
   });
 
@@ -658,6 +661,22 @@ function bindEvents() {
     if (e.key === 'Enter') {
       document.getElementById('confirmTask').click();
     }
+  });
+
+  // Task duration picker arrows
+  bindTaskPickerArrow('taskHoursUp', 'hours', true);
+  bindTaskPickerArrow('taskHoursDown', 'hours', false);
+  bindTaskPickerArrow('taskMinsUp', 'minutes', true);
+  bindTaskPickerArrow('taskMinsDown', 'minutes', false);
+
+  // Scroll wheel on task picker values
+  ['taskHours', 'taskMins'].forEach(id => {
+    const el = document.getElementById(id);
+    const field = id === 'taskHours' ? 'hours' : 'minutes';
+    el.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      adjustTaskPicker(field, e.deltaY < 0);
+    }, { passive: false });
   });
 
   // Custom blocked site input
@@ -742,6 +761,44 @@ function truncate(str, maxLen) {
   return str.length > maxLen ? str.slice(0, maxLen) + '...' : str;
 }
 
+// ---- Task Duration Picker ----
+function bindTaskPickerArrow(btnId, field, isUp) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    adjustTaskPicker(field, isUp);
+  });
+}
+
+function adjustTaskPicker(field, isUp) {
+  const hoursEl = document.getElementById('taskHours');
+  const minsEl = document.getElementById('taskMins');
+  let h = parseInt(hoursEl.textContent);
+  let m = parseInt(minsEl.textContent);
+
+  if (field === 'hours') {
+    h = isUp ? Math.min(h + 1, 12) : Math.max(h - 1, 0);
+  } else {
+    m = isUp ? m + 5 : m - 5;
+    if (m >= 60) { m = 0; h = Math.min(h + 1, 12); }
+    if (m < 0) { m = 55; h = Math.max(h - 1, 0); }
+  }
+  if (h === 0 && m < 5) m = 5;
+
+  hoursEl.textContent = h;
+  minsEl.textContent = m;
+  selectedTaskDuration = h * 60 + m;
+
+  // Sync active pill
+  document.querySelectorAll('.duration-pill').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.dur) === selectedTaskDuration);
+  });
+
+  // Animate
+  const el = field === 'hours' ? hoursEl : minsEl;
+  el.classList.remove('picker-bump');
+  void el.offsetWidth;
+  el.classList.add('picker-bump');
+}
+
 function formatTaskDuration(minutes) {
   if (minutes >= 90) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
   if (minutes >= 60) return '1h';
@@ -809,6 +866,8 @@ function resetTaskForm() {
   document.getElementById('taskInput').value = '';
   document.getElementById('blockCustomInput').value = '';
   selectedTaskDuration = 30;
+  document.getElementById('taskHours').textContent = 0;
+  document.getElementById('taskMins').textContent = 30;
   document.querySelectorAll('.duration-pill').forEach(p => p.classList.remove('active'));
   const def = document.querySelector('.duration-pill[data-dur="30"]');
   if (def) def.classList.add('active');

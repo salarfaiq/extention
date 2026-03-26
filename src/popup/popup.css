@@ -627,6 +627,17 @@ body::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; 
   color: var(--accent);
 }
 
+.task-time-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 8px 16px;
+}
+
 .task-form-actions {
   display: flex;
   gap: 8px;
