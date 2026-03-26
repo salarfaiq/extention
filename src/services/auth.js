@@ -56,43 +56,59 @@ const STBAuth = {
     };
   },
 
-  // ---- Google Sign-In via Chrome Identity API ----
-  // Uses getAuthToken which leverages the user's Chrome-signed-in Google account.
-  // No custom OAuth client ID needed — Chrome handles the OAuth flow.
+  // ---- Google Sign-In via launchWebAuthFlow ----
+  // Uses Firebase's built-in auth handler as the OAuth redirect.
+  // No custom Chrome OAuth client ID needed.
   async signInWithGoogle() {
     try {
-      // Step 1: Get Google access token from Chrome
-      const token = await new Promise((resolve, reject) => {
-        chrome.identity.getAuthToken({ interactive: true }, (tok) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-          } else {
-            resolve(tok);
+      const redirectUri = chrome.identity.getRedirectURL();
+
+      // Use Firebase Auth's signInWithRedirect-style URL
+      // This opens Google sign-in through Firebase's auth handler
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authUrl.searchParams.set('client_id', '522222757805-1hbigsgbrcqkrdjpnm7uahibao22pl65.apps.googleusercontent.com');
+      authUrl.searchParams.set('response_type', 'id_token');
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('scope', 'openid email profile');
+
+      const responseUrl = await new Promise((resolve, reject) => {
+        chrome.identity.launchWebAuthFlow(
+          { url: authUrl.toString(), interactive: true },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else if (!response) {
+              reject(new Error('No response from Google'));
+            } else {
+              resolve(response);
+            }
           }
-        });
+        );
       });
 
-      if (!token) {
-        return { error: 'Google sign-in was cancelled' };
+      // Extract id_token from the hash fragment
+      const hashParams = new URLSearchParams(responseUrl.split('#')[1] || '');
+      const googleIdToken = hashParams.get('id_token');
+
+      if (!googleIdToken) {
+        return { error: 'No ID token received from Google' };
       }
 
-      // Step 2: Exchange Google access token for Firebase credential
+      // Exchange Google ID token for Firebase credential
       const res = await fetch(
         `${AUTH_API}/accounts:signInWithIdp?key=${AUTH_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            postBody: `access_token=${token}&providerId=google.com`,
-            requestUri: 'https://power-mates.firebaseapp.com/__/auth/handler',
+            postBody: `id_token=${googleIdToken}&providerId=google.com`,
+            requestUri: redirectUri,
             returnSecureToken: true
           })
         }
       );
       const data = await res.json();
       if (data.error) {
-        // Revoke the token on failure so it can be retried
-        chrome.identity.removeCachedAuthToken({ token });
         return { error: mapAuthError(data.error.message) };
       }
 

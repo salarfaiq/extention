@@ -106,20 +106,12 @@ function bindLoginEvents() {
     if (e.key === 'Enter') document.getElementById('loginPassword').focus();
   });
 
-  googleBtn.addEventListener('click', async () => {
+  googleBtn.addEventListener('click', () => {
     setLoginLoading(true);
     errorEl.classList.add('hidden');
-
-    const res = await sendMsg({ action: 'signInGoogle' });
-
-    setLoginLoading(false);
-    if (res?.error) {
-      showLoginError(res.error);
-      return;
-    }
-
-    const authState = await sendMsg({ action: 'getAuthSession' });
-    showAppMain(authState);
+    // launchWebAuthFlow opens a new window — the popup will close.
+    // When user reopens the popup after signing in, initApp() detects the session.
+    chrome.runtime.sendMessage({ action: 'signInGoogle' });
   });
 
   forgotLink.addEventListener('click', async (e) => {
