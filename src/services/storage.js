@@ -138,13 +138,14 @@ async function setCharacter(character) {
 
 // ---- Tasks CRUD ----
 
-async function addTask(title, durationMinutes) {
+async function addTask(title, durationMinutes, blockedSites) {
   return updateData((data) => {
     if (!data.tasks) data.tasks = [];
     data.tasks.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       title,
       durationMinutes,
+      blockedSites: blockedSites || [],
       completed: false,
       createdAt: Date.now()
     });

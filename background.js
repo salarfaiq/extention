@@ -325,7 +325,7 @@ async function handleMessage(msg, sender) {
     }
 
     case 'addTask': {
-      await STBStorage.addTask(msg.title, msg.durationMinutes);
+      await STBStorage.addTask(msg.title, msg.durationMinutes, msg.blockedSites);
       return { ok: true };
     }
 

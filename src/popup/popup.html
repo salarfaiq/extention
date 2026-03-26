@@ -179,16 +179,34 @@
       Add Task
     </button>
     <div class="task-form" id="taskForm">
-      <input type="text" id="taskInput" placeholder="What do you need to do?" autocomplete="off">
-      <div class="task-duration-pills">
-        <button class="duration-pill active" data-dur="15">15m</button>
-        <button class="duration-pill" data-dur="30">30m</button>
-        <button class="duration-pill" data-dur="45">45m</button>
-        <button class="duration-pill" data-dur="60">60m</button>
+      <div class="form-group">
+        <label>Task Name</label>
+        <input type="text" id="taskInput" placeholder="e.g. Read for 30 minutes" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Duration</label>
+        <div class="task-duration-pills">
+          <button class="duration-pill" data-dur="15">15m</button>
+          <button class="duration-pill active" data-dur="30">30m</button>
+          <button class="duration-pill" data-dur="45">45m</button>
+          <button class="duration-pill" data-dur="60">1h</button>
+          <button class="duration-pill" data-dur="90">1h 30m</button>
+          <button class="duration-pill" data-dur="120">2h</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Block websites during task</label>
+        <div class="block-sites-chips" id="blockSitesChips">
+          <!-- Populated from user's site limits + common sites -->
+        </div>
+        <div class="block-custom-site">
+          <input type="text" id="blockCustomInput" placeholder="Add a website to block...">
+          <button class="block-custom-add" id="blockCustomAdd">+</button>
+        </div>
       </div>
       <div class="task-form-actions">
         <button class="btn-ghost btn-sm" id="cancelTask">Cancel</button>
-        <button class="btn-primary btn-sm" id="confirmTask">Add</button>
+        <button class="btn-primary btn-sm" id="confirmTask">Add Task</button>
       </div>
     </div>
     <div class="task-progress-bar" id="taskProgressBar">

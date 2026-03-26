@@ -651,6 +651,99 @@ body::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; 
 
 .task-empty { padding: 12px 10px; }
 
+/* ---- Task meta row (duration + blocked count) ---- */
+.task-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-blocked-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ring-red);
+  background: rgba(255, 77, 77, 0.08);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+
+.task-blocked-tag svg { flex-shrink: 0; }
+
+/* ---- Block Sites Chips (in task form) ---- */
+.block-sites-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.block-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--divider);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.block-chip:hover {
+  border-color: var(--ring-red);
+  color: var(--text-primary);
+}
+
+.block-chip.selected {
+  border-color: var(--ring-red);
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--ring-red);
+}
+
+.chip-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+.block-custom-site {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.block-custom-site input {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.block-custom-add {
+  width: 34px;
+  background: var(--surface);
+  border: 1.5px solid var(--divider);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.block-custom-add:hover {
+  border-color: var(--accent);
+  background: var(--accent-surface);
+}
+
 /* ---- Site Item Wrapper (for inline edit) ---- */
 .site-item-wrapper {
   border-bottom: 1px solid var(--border);

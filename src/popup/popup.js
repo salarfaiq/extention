@@ -23,11 +23,7 @@ async function initApp() {
   const skipResult = await chrome.storage.local.get('stb_skip_login');
   const skippedLogin = skipResult.stb_skip_login === true;
 
-  if (isLoggedIn || skippedLogin) {
-    showAppMain(authState);
-  } else {
-    showLoginScreen();
-  }
+  showAppMain(authState);
 }
 
 function showLoginScreen() {
@@ -494,20 +490,33 @@ function renderTasks() {
   const pct = tasks.length > 0 ? (completed / tasks.length) * 100 : 0;
   progressFill.style.width = pct + '%';
 
-  container.innerHTML = tasks.map(task => `
-    <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-      <button class="task-checkbox ${task.completed ? 'checked' : ''}" data-id="${task.id}"></button>
-      <div class="task-info">
-        <div class="task-title">${task.title}</div>
-        <div class="task-duration">${task.durationMinutes}m</div>
+  container.innerHTML = tasks.map(task => {
+    const blocked = task.blockedSites || [];
+    const blockedTag = blocked.length > 0
+      ? `<span class="task-blocked-tag" title="${blocked.join(', ')}">
+           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31A7.902 7.902 0 0112 20zm6.31-3.1L7.1 5.69A7.902 7.902 0 0112 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" fill="currentColor"/></svg>
+           ${blocked.length}
+         </span>`
+      : '';
+
+    return `
+      <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+        <button class="task-checkbox ${task.completed ? 'checked' : ''}" data-id="${task.id}"></button>
+        <div class="task-info">
+          <div class="task-title">${task.title}</div>
+          <div class="task-meta-row">
+            <span class="task-duration">${formatTaskDuration(task.durationMinutes)}</span>
+            ${blockedTag}
+          </div>
+        </div>
+        <button class="task-delete" data-id="${task.id}">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="#FF453A" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
-      <button class="task-delete" data-id="${task.id}">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M18 6L6 18M6 6l12 12" stroke="#FF453A" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   // Bind task events
   container.querySelectorAll('.task-checkbox').forEach(cb => {
@@ -602,15 +611,17 @@ function bindEvents() {
   // Task form
   document.getElementById('showTaskForm').addEventListener('click', () => {
     const form = document.getElementById('taskForm');
+    const wasOpen = form.classList.contains('open');
     form.classList.toggle('open');
-    if (form.classList.contains('open')) {
+    if (!wasOpen) {
+      populateBlockSitesChips();
       document.getElementById('taskInput').focus();
     }
   });
 
   document.getElementById('cancelTask').addEventListener('click', () => {
     document.getElementById('taskForm').classList.remove('open');
-    document.getElementById('taskInput').value = '';
+    resetTaskForm();
   });
 
   document.querySelectorAll('.duration-pill').forEach(pill => {
@@ -624,12 +635,20 @@ function bindEvents() {
   document.getElementById('confirmTask').addEventListener('click', () => {
     const title = document.getElementById('taskInput').value.trim();
     if (!title) return;
+
+    // Collect selected blocked sites
+    const selectedSites = [];
+    document.querySelectorAll('.block-chip.selected').forEach(chip => {
+      selectedSites.push(chip.dataset.site);
+    });
+
     chrome.runtime.sendMessage({
       action: 'addTask',
       title,
-      durationMinutes: selectedTaskDuration
+      durationMinutes: selectedTaskDuration,
+      blockedSites: selectedSites
     }, () => {
-      document.getElementById('taskInput').value = '';
+      resetTaskForm();
       document.getElementById('taskForm').classList.remove('open');
       refreshData();
     });
@@ -639,6 +658,14 @@ function bindEvents() {
     if (e.key === 'Enter') {
       document.getElementById('confirmTask').click();
     }
+  });
+
+  // Custom blocked site input
+  document.getElementById('blockCustomAdd').addEventListener('click', () => {
+    addCustomBlockSite();
+  });
+  document.getElementById('blockCustomInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addCustomBlockSite();
   });
 }
 
@@ -713,4 +740,77 @@ function formatTime(minutes) {
 
 function truncate(str, maxLen) {
   return str.length > maxLen ? str.slice(0, maxLen) + '...' : str;
+}
+
+function formatTaskDuration(minutes) {
+  if (minutes >= 90) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  if (minutes >= 60) return '1h';
+  return `${minutes}m`;
+}
+
+// ---- Blocked Sites Chips for Task Form ----
+
+const COMMON_SITES = [
+  'youtube.com', 'instagram.com', 'tiktok.com', 'x.com',
+  'reddit.com', 'facebook.com', 'netflix.com', 'snapchat.com'
+];
+
+function populateBlockSitesChips() {
+  const container = document.getElementById('blockSitesChips');
+  // Merge common sites with user's existing limited sites
+  const userSites = Object.keys(currentData?.sites || {});
+  const allSites = [...new Set([...userSites, ...COMMON_SITES])];
+
+  container.innerHTML = allSites.map(site => `
+    <button class="block-chip" data-site="${site}">
+      <img src="https://www.google.com/s2/favicons?domain=${site}&sz=32" class="chip-favicon" alt="">
+      <span>${site.replace(/\.com$/, '')}</span>
+    </button>
+  `).join('');
+
+  // Bind chip toggle
+  container.querySelectorAll('.block-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+    });
+  });
+}
+
+function addCustomBlockSite() {
+  const input = document.getElementById('blockCustomInput');
+  let site = input.value.trim().toLowerCase();
+  if (!site) return;
+  site = site.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
+  if (!site) return;
+
+  const container = document.getElementById('blockSitesChips');
+  // Check if already exists
+  if (container.querySelector(`[data-site="${site}"]`)) {
+    // Select it if not already selected
+    container.querySelector(`[data-site="${site}"]`).classList.add('selected');
+    input.value = '';
+    return;
+  }
+
+  // Add new chip (pre-selected)
+  const chip = document.createElement('button');
+  chip.className = 'block-chip selected';
+  chip.dataset.site = site;
+  chip.innerHTML = `
+    <img src="https://www.google.com/s2/favicons?domain=${site}&sz=32" class="chip-favicon" alt="">
+    <span>${site.replace(/\.com$/, '')}</span>
+  `;
+  chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  container.appendChild(chip);
+  input.value = '';
+}
+
+function resetTaskForm() {
+  document.getElementById('taskInput').value = '';
+  document.getElementById('blockCustomInput').value = '';
+  selectedTaskDuration = 30;
+  document.querySelectorAll('.duration-pill').forEach(p => p.classList.remove('active'));
+  const def = document.querySelector('.duration-pill[data-dur="30"]');
+  if (def) def.classList.add('active');
+  document.querySelectorAll('.block-chip').forEach(c => c.classList.remove('selected'));
 }
